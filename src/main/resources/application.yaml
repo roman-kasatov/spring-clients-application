@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: test-task
+  datasource:
+    url: jdbc:postgresql://localhost:5432/clients_db
+    username: root
+    password: 1234
+    driver-class-name: org.postgresql.Driver

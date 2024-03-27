@@ -1,0 +1,221 @@
+openapi: 3.0.0
+info:
+  title: Тестовое задание для Unibell
+  version: 0.0.1
+servers:
+  - url: http://localhost:8080
+    description: Сервер с клиентами
+paths:
+  /clients:
+    get:
+      summary: Получение списка клиентов
+      tags:
+        - Clients
+      operationId: getAllClients
+      responses:
+        '200':
+          description: Успешный ответ со списком всех клиентов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Clients"
+    post:
+      summary: Добавление нового клиента
+      tags:
+        - Clients
+      operationId: addNewClient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: Ivan
+      responses:
+        '201':
+          description: Успешное создание клиента
+          headers:
+            Location:
+              description: Id созданного клиента
+              schema:
+                $ref: "#/components/schemas/Client/properties/id"
+        '400':
+          description: Клиент не был создан. Или поля **name** нет, или оно длиннее 256 символов
+  /clients/{clientId}:
+    get:
+      summary: Получение информации о заданном клиенте
+      tags:
+        - Clients
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          description: Id клиента
+          schema:
+            $ref: "#/components/schemas/Client/properties/id"
+      responses:
+        '200':
+          description: Информация о клиенте
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        '404':
+          description: Клиент с таким Id не найден
+    post:
+      summary: Добавление (одного из) email адреса или телефонного номера клиенту
+      tags:
+        - Contacts
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          description: Id клиента
+          schema:
+            $ref: "#/components/schemas/Client/properties/id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/Email"
+                - $ref: "#/components/schemas/PhoneNumber"
+      responses:
+        '201':
+          description: Контакт успешно добавлен
+        '400':
+          description: Или json некорректный, или не содержит поля с контактом
+        '404':
+          description: Клиент с таким Id не найден
+          
+  /clients/{clientId}/email:
+    get:
+      summary: Получение email адресов клиента
+      tags:
+        - Contacts
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          description: Id клиента
+          schema:
+            $ref: "#/components/schemas/Client/properties/id"
+      responses:
+        '200':
+          description: Массив email адресов клиента
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example:
+                    - email@test.com
+                    - email1@test.com
+        '404':
+          description: Клиент с таким Id не найден
+  /clients/{clientId}/phone:
+    get:
+      summary: Получение телефонных номеров клиента
+      tags:
+        - Contacts
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          description: Id клиента
+          schema:
+            $ref: "#/components/schemas/Client/properties/id"
+      responses:
+        '200':
+          description: Массив телефонных номеров клиента
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+              example:
+                - "+7(999)123-45-67"
+                - "+79997776655"
+        '404':
+          description: Клиент с таким Id не найден
+  /clients/{clientId}/contact:
+    get:
+      summary: Получение email адресов и телефонных номеров клиента
+      tags:
+        - Contacts
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          description: Id клиента
+          schema:
+            $ref: "#/components/schemas/Client/properties/id"
+      responses:
+        '200':
+          description: Массив email адресов клиента
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - email
+                  - phone
+                properties:
+                  email:
+                    type: array
+                    items:
+                      type: string
+                  phone:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - "+7(999)123-45-67"
+                      - "+79997776655"
+        '404':
+          description: Клиент с таким Id не найден
+
+
+components:
+  schemas:
+    Email:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          example: email@test.com
+    PhoneNumber:
+      type: object
+      required:
+        - phone
+      properties:
+        phone:
+          type: string
+          example: "+7(999)123-45-67"
+    Client:
+      type: object
+      required:
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: egor
+    Clients:
+      type: array
+      items:
+        $ref: "#/components/schemas/Client"
+            
